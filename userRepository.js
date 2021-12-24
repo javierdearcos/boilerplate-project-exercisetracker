@@ -18,6 +18,10 @@ const createUser = (username, done) => {
   user.save(done);
 };
 
+const getUsers = (done) => {
+  User.find({}, done);
+}
+
 const findById = (id, done) => {
   User.findById(id, done);
 };
@@ -28,6 +32,7 @@ const findByUsername = (username, done) => {
 
 module.exports = {
   createUser,
+  getUsers,
   findById,
   findByUsername
 }

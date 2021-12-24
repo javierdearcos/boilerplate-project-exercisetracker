@@ -14,6 +14,18 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html')
 });
 
+app.get("/api/users", (_, res) => {
+
+  userRepository.getUsers((err, users) => {
+    if (err) {
+      res.json({ error: `Error getting users: ${err}`});
+      return;
+    }
+
+    res.json(users);
+  })
+});
+
 app.post("/api/users", (req, res) => {
   
   const username = getRequiredBodyProperty(req, "username");
