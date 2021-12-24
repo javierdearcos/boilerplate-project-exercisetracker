@@ -24,6 +24,11 @@ const createExercise = (userId, description, duration, date, done) => {
   exercise.save(done);
 };
 
+const getExercisesByUserId = (userId, done) => {
+  Exercise.find({ userId }, done);
+}
+
 module.exports = {
-  createExercise
+  createExercise,
+  getExercisesByUserId
 }

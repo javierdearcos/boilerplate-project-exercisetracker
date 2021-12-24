@@ -40,11 +40,48 @@ app.post("/api/users", (req, res) => {
   });
 });
 
+app.get("/api/users/:userId/logs", (req, res) => {
+
+  const userId = req.params.userId;
+
+  userRepository.findById(userId, (err, user) => {
+    if (err) {
+      res.json({ error: `Error getting user with id "${userId}": ${err}`});
+      return;
+    }
+
+    if (!user) {
+      res.json({ error: `User with id "${userId}" does not exist`});
+      return;
+    }
+  
+    exerciseRepository.getExercisesByUserId(userId, (err, exercises) => {
+      if (err) {
+        res.json({ error: `Error gettings exercises from user "${userId}": ${err}`});
+        return;
+      }
+
+      res.json({
+        _id: user._id,
+        username: user.username,
+        count: exercises.length,
+        log: exercises.map(exercise => {
+                return {
+                  description: exercise.description,
+                  duration: exercise.duration,
+                  date: exercise.date.toDateString()
+                };
+              })
+      });
+    });
+  });
+});
+
 app.post("/api/users/:userId/exercises", (req, res) => {
   const userId = req.params.userId;
   const description = getRequiredBodyProperty(req, "description");
   const duration = getRequiredBodyProperty(req, "duration");
-  const date = req.body.date;
+  const date = req.body.date || new Date();
 
   userRepository.findById(userId, (err, user) => {
     if (err) {
