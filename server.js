@@ -40,43 +40,6 @@ app.post("/api/users", (req, res) => {
   });
 });
 
-app.get("/api/users/:userId/logs", (req, res) => {
-
-  const userId = req.params.userId;
-
-  userRepository.findById(userId, (err, user) => {
-    if (err) {
-      res.json({ error: `Error getting user with id "${userId}": ${err}`});
-      return;
-    }
-
-    if (!user) {
-      res.json({ error: `User with id "${userId}" does not exist`});
-      return;
-    }
-  
-    exerciseRepository.getExercisesByUserId(userId, (err, exercises) => {
-      if (err) {
-        res.json({ error: `Error gettings exercises from user "${userId}": ${err}`});
-        return;
-      }
-
-      res.json({
-        _id: user._id,
-        username: user.username,
-        count: exercises.length,
-        log: exercises.map(exercise => {
-                return {
-                  description: exercise.description,
-                  duration: exercise.duration,
-                  date: exercise.date.toDateString()
-                };
-              })
-      });
-    });
-  });
-});
-
 app.post("/api/users/:userId/exercises", (req, res) => {
   const userId = req.params.userId;
   const description = getRequiredBodyProperty(req, "description");
@@ -107,6 +70,46 @@ app.post("/api/users/:userId/exercises", (req, res) => {
         duration: exercise.duration,
         date: exercise.date.toDateString()
       })
+    });
+  });
+});
+
+app.get("/api/users/:userId/logs", (req, res) => {
+
+  const userId = req.params.userId;
+  const from = req.query.from || new Date('1970-1-1');
+  const to = req.query.to || new Date('2050-12-31');
+  const limit = parseInt(req.query.limit) || 1000;
+
+  userRepository.findById(userId, (err, user) => {
+    if (err) {
+      res.json({ error: `Error getting user with id "${userId}": ${err}`});
+      return;
+    }
+
+    if (!user) {
+      res.json({ error: `User with id "${userId}" does not exist`});
+      return;
+    }
+
+    exerciseRepository.getExercisesByUserId(userId, from, to, limit, (err, exercises) => {
+      if (err) {
+        res.json({ error: `Error gettings exercises from user "${userId}": ${err}`});
+        return;
+      }
+
+      res.json({
+        _id: user._id,
+        username: user.username,
+        count: exercises.length,
+        log: exercises.map(exercise => {
+          return {
+            description: exercise.description,
+            duration: exercise.duration,
+            date: exercise.date.toDateString()
+          }
+        })
+      });
     });
   });
 });
